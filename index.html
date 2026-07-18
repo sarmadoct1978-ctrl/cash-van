@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كاش فان | متابعة المبيعات والموزّعين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#06070D;
+    --bg-2:#090B14;
+    --surface:#11141F;
+    --surface-2:#161A28;
+    --surface-3:#1D2233;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --accent:#00D9A3;
+    --accent-2:#6FFFCB;
+    --accent-deep:#00976E;
+    --accent-glow:rgba(0,217,163,0.28);
+    --violet:#7C6CF0;
+    --violet-glow:rgba(124,108,240,0.25);
+    --success:#4F8DFF;
+    --success-glow:rgba(79,141,255,0.22);
+    --danger:#FF5D6C;
+    --danger-glow:rgba(255,93,108,0.22);
+    --text:#F3F5FA;
+    --text-dim:#8E97AE;
+    --text-dimmer:#5E6A85;
+    --shadow-lg:0 24px 55px -16px rgba(0,0,0,0.6);
+    --shadow-md:0 12px 28px -10px rgba(0,0,0,0.5);
+    --shadow-sm:0 2px 10px rgba(0,0,0,0.32);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1000px 560px at 90% -10%, rgba(0,217,163,0.13), transparent 60%),
+      radial-gradient(780px 560px at 0% 8%, rgba(124,108,240,0.10), transparent 60%),
+      radial-gradient(600px 400px at 50% 105%, rgba(0,217,163,0.05), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans Arabic', sans-serif;
+    min-height:100vh;
+    padding-bottom:70px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{ font-family:'Cairo', sans-serif; }
+  ::selection{ background:var(--accent); color:#031B14; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background:var(--surface-3); border-radius:8px; }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:14px;
+    padding:20px 32px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(255,255,255,0.025), transparent 100%);
+    position:sticky; top:0; z-index:30;
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+  .brand{ display:flex; align-items:center; gap:13px; }
+  .brand .mark{
+    width:44px; height:44px; border-radius:13px;
+    background:linear-gradient(150deg, var(--accent-2), var(--accent) 55%, var(--accent-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cairo',sans-serif; font-weight:900; color:#032A20;
+    font-size:15px; letter-spacing:.5px;
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -6px 10px rgba(0,0,0,0.18);
+  }
+  .brand h1{ font-size:19px; margin:0; letter-spacing:.2px; font-weight:800; }
+  .brand span{ display:block; font-size:11.5px; color:var(--text-dim); font-weight:500; margin-top:3px; }
+
+  .role-switch{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  select, input, button{ font-family:'IBM Plex Sans Arabic', sans-serif; font-size:14px; }
+  select, input{
+    background:var(--surface-2); color:var(--text);
+    border:1px solid var(--border); border-radius:9px;
+    padding:10px 13px; outline:none;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  select:focus, input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+  select{ cursor:pointer; }
+
+  button{
+    background:linear-gradient(160deg, var(--accent-2), var(--accent) 70%);
+    color:#032A20; border:none;
+    border-radius:9px; padding:10px 18px; font-weight:800;
+    cursor:pointer;
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -3px 6px rgba(0,0,0,0.15);
+    transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    letter-spacing:.1px;
+  }
+  button:hover{ filter:brightness(1.06); transform:translateY(-1px); box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.5); }
+  button:active{ transform:translateY(1px); box-shadow: var(--shadow-sm); }
+  button.ghost{
+    background:var(--surface-2); color:var(--text); border:1px solid var(--border-strong);
+    font-weight:700; box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  button.ghost:hover{ border-color:var(--accent); color:var(--accent-2); background:var(--surface-3); }
+  button.danger{ background:linear-gradient(160deg,#FF8792,var(--danger)); color:#33060B; }
+  button.small{ padding:7px 12px; font-size:12.5px; border-radius:7px; }
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{
+    display:flex; gap:6px; padding:16px 32px 14px 32px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(255,255,255,0.012), transparent);
+  }
+  nav.tabs button.tab{
+    display:flex; align-items:center; gap:8px;
+    background:transparent; color:var(--text-dim); border:1px solid transparent;
+    padding:9px 16px; border-radius:9px; font-weight:700; font-size:13.5px;
+    box-shadow:none; transform:none;
+  }
+  nav.tabs button.tab svg{ width:16px; height:16px; opacity:.85; }
+  nav.tabs button.tab:hover{ color:var(--text); background:var(--surface); transform:none; }
+  nav.tabs button.tab.active{
+    background:linear-gradient(160deg, var(--surface-3), var(--surface-2));
+    color:var(--accent-2);
+    border:1px solid var(--border-strong);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  main{ padding:26px 32px; max-width:1320px; margin:0 auto; }
+
+  /* ---------- KPI cards ---------- */
+  .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:16px; margin-bottom:26px; }
+  .kpi{
+    background:linear-gradient(160deg, var(--surface-2), var(--surface) 75%);
+    border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px; position:relative; overflow:hidden;
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .kpi:hover{ transform:translateY(-2px); box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.06); }
+  .kpi .icon-badge{
+    width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(150deg, var(--accent-2), var(--accent-deep));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.25);
+    margin-bottom:12px;
+  }
+  .kpi .icon-badge svg{ width:17px; height:17px; color:#032A20; }
+  .kpi .label{ font-size:12px; color:var(--text-dim); font-weight:600; }
+  .kpi .value{ font-family:'Cairo',sans-serif; font-size:27px; font-weight:800; margin-top:5px; font-variant-numeric:tabular-nums; }
+  .kpi .sub{ font-size:11.5px; color:var(--text-dimmer); margin-top:4px; }
+
+  /* ---------- Section heading ---------- */
+  .section-head{ display:flex; align-items:center; justify-content:space-between; margin:30px 0 16px 0; flex-wrap:wrap; gap:10px; }
+  .section-head h2{ font-size:18px; margin:2px 0 0 0; font-weight:800; }
+  .section-head .eyebrow{ font-size:11px; color:var(--accent-2); letter-spacing:1.2px; font-weight:800; text-transform:uppercase; }
+
+  /* ---------- Manifest cards (signature element) ---------- */
+  .manifest-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(275px,1fr)); gap:18px; }
+  .manifest{
+    background:linear-gradient(165deg, var(--surface-2), var(--surface) 70%);
+    border:1px solid var(--border); border-radius:14px;
+    padding:20px; position:relative;
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .manifest:hover{ transform:translateY(-3px); box-shadow: var(--shadow-lg); border-color:var(--border-strong); }
+  .manifest::before, .manifest::after{
+    content:''; position:absolute; width:18px; height:18px; background:var(--bg);
+    border-radius:50%; top:50%; transform:translateY(-50%);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .manifest::before{ inset-inline-start:-10px; }
+  .manifest::after{ inset-inline-end:-10px; }
+  .manifest .top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .manifest .name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:16px; }
+  .manifest .region{ font-size:11px; color:var(--accent-2); background:rgba(0,217,163,0.12); border:1px solid rgba(0,217,163,0.22); padding:3px 10px; border-radius:20px; margin-top:6px; display:inline-block; font-weight:600; }
+  .manifest .target-tag{ text-align:left; }
+  .manifest .target-tag .t-label{ font-size:10.5px; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:.5px; }
+  .manifest .target-tag .t-val{ font-family:'Cairo',sans-serif; font-weight:800; font-size:16px; }
+  .manifest .stub{ border-top:1px dashed var(--border-strong); margin:16px 0; }
+  .gauge-wrap{ margin-top:6px; }
+  .gauge-track{ background:var(--bg-2); height:11px; border-radius:7px; overflow:hidden; position:relative; box-shadow:inset 0 2px 4px rgba(0,0,0,0.45); }
+  .gauge-fill{ height:100%; border-radius:7px; transition:width .5s cubic-bezier(.2,.8,.2,1); position:relative; }
+  .gauge-fill::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,0.35), transparent 55%); }
+  .gauge-labels{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-dim); margin-top:7px; font-variant-numeric:tabular-nums; font-weight:600; }
+  .manifest .stats-row{ display:flex; gap:18px; margin-top:14px; }
+  .manifest .stat{ font-size:11.5px; color:var(--text-dim); }
+  .manifest .stat b{ display:block; color:var(--text); font-family:'Cairo',sans-serif; font-size:15.5px; margin-top:2px; }
+
+  /* ---------- Table ---------- */
+  .table-wrap{
+    background:linear-gradient(165deg, var(--surface-2), var(--surface) 80%);
+    border:1px solid var(--border); border-radius:14px; overflow:hidden;
+    box-shadow: var(--shadow-md);
+  }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ text-align:right; background:var(--surface-3); color:var(--text-dim); font-weight:800; padding:12px 16px; font-size:11.5px; text-transform:uppercase; letter-spacing:.4px; }
+  td{ padding:12px 16px; border-top:1px solid var(--border); }
+  tbody tr{ transition:background .12s ease; }
+  tbody tr:hover td{ background:rgba(255,255,255,0.02); }
+  td.num, th.num{ font-variant-numeric:tabular-nums; }
+  .pill{ padding:3px 11px; border-radius:20px; font-size:11px; font-weight:800; border:1px solid transparent; }
+  .pill.ok{ background:var(--success-glow); color:var(--success); border-color:rgba(79,141,255,0.32); }
+  .pill.warn{ background:var(--danger-glow); color:var(--danger); border-color:rgba(255,93,108,0.32); }
+
+  /* ---------- Forms ---------- */
+  .card{
+    background:linear-gradient(165deg, var(--surface-2), var(--surface) 80%);
+    border:1px solid var(--border); border-radius:14px; padding:20px;
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .card-title{ display:flex; align-items:center; gap:9px; font-family:'Cairo',sans-serif; font-weight:800; font-size:14.5px; margin-bottom:16px; color:var(--accent-2); }
+  .card-title svg{ width:16px; height:16px; }
+  .form-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:13px; }
+  .field label{ display:block; font-size:11.5px; color:var(--text-dim); margin-bottom:6px; font-weight:700; }
+  .field select, .field input{ width:100%; }
+  .form-actions{ margin-top:16px; display:flex; gap:8px; justify-content:flex-end; align-items:center; }
+
+  /* ---------- Receipt scan ---------- */
+  .scan-row{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    background:linear-gradient(160deg, rgba(0,217,163,0.08), rgba(0,217,163,0.02));
+    border:1px dashed var(--border-strong); border-radius:12px;
+    padding:13px 16px; margin-bottom:16px;
+  }
+  .scan-row .scan-text{ font-size:12.5px; color:var(--text-dim); flex:1; min-width:160px; }
+  .scan-row .scan-text b{ color:var(--text); display:block; font-size:13.5px; margin-bottom:2px; }
+  label.scan-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    background:linear-gradient(160deg, var(--accent-2), var(--accent) 70%);
+    color:#032A20; border:none; border-radius:9px; padding:9px 16px; font-weight:800;
+    cursor:pointer; font-size:13px; white-space:nowrap;
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45);
+  }
+  label.scan-btn:hover{ filter:brightness(1.06); }
+  label.scan-btn svg{ width:15px; height:15px; }
+  label.scan-btn input[type=file]{ display:none; }
+  label.scan-btn.busy{ opacity:.7; pointer-events:none; }
+  .spin{ animation:spin 0.8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--text-dim); }
+  .empty svg{ width:44px; height:44px; color:var(--text-dimmer); margin-bottom:14px; }
+  .empty .disp{ color:var(--text); font-size:16.5px; margin-bottom:6px; font-weight:800; }
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:linear-gradient(160deg, var(--surface-3), var(--surface-2));
+    border:1px solid var(--accent); color:var(--text);
+    padding:12px 22px; border-radius:10px; font-size:13.5px; font-weight:700;
+    opacity:0; pointer-events:none; transition:opacity .25s ease, bottom .25s ease;
+    z-index:50; box-shadow: var(--shadow-lg);
+  }
+  .toast.show{ opacity:1; bottom:32px; }
+
+  @media (max-width:640px){
+    header{ padding:16px; } main{ padding:16px; } nav.tabs{ padding:14px 16px; }
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="mark">CV</div>
+    <div>
+      <h1>كاش فان</h1>
+      <span>متابعة الطلبات والتوزيع والمبيعات الميدانية</span>
+    </div>
+  </div>
+  <div class="role-switch" id="roleSwitch"></div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+<main id="main"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== Icons ===================== */
+const ICONS = {
+  overview: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>',
+  promoters: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  orders: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="15" height="13" rx="2"/><path d="M16 11h3l4 4v5h-7"/><circle cx="5.5" cy="20.5" r="1.5"/><circle cx="17.5" cy="20.5" r="1.5"/></svg>',
+  inventory: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
+  revenue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.4 1.2-2.5 2.5-2.5s2.5 1 2.5 2.2c0 2.8-5 1.6-5 4.3 0 1.3 1.2 2.3 2.5 2.3s2.5-1 2.5-2.3"/></svg>',
+  units: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/></svg>',
+  empty: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg>',
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22V12h6v10"/></svg>',
+  camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  excel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 13 6 6M15 13l-6 6"/></svg>',
+  spin: '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+};
+
+/* ===================== Storage helpers ===================== */
+const DATA_KEY = 'app-data';
+const ROLE_KEY = 'ui-role';
+
+let DB = { promoters: [], orders: [], inventory: [] };
+let ROLE = { type: 'manager', promoterId: null };
+let activeTab = 'overview';
+
+async function loadDB(){
+  try{
+    const res = await fetch('/api/data');
+    if(!res.ok) throw new Error('failed');
+    DB = await res.json();
+    if(!DB || typeof DB!=='object') DB = { promoters: [], orders: [], inventory: [] };
+  }catch(e){ DB = { promoters: [], orders: [], inventory: [] }; showToast('تعذّر الاتصال بالسيرفر، تحقق أن الخدمة تعمل'); }
+}
+async function saveDB(){
+  try{
+    const res = await fetch('/api/data', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(DB)
+    });
+    if(!res.ok) throw new Error('failed');
+  }catch(e){ showToast('تعذّر حفظ البيانات، حاول مرة أخرى'); }
+}
+async function loadRole(){
+  try{
+    const raw = localStorage.getItem(ROLE_KEY);
+    ROLE = raw ? JSON.parse(raw) : { type:'manager', promoterId:null };
+  }catch(e){ ROLE = { type:'manager', promoterId:null }; }
+}
+async function saveRole(){
+  try{ localStorage.setItem(ROLE_KEY, JSON.stringify(ROLE)); }catch(e){}
+}
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function fmtNum(n){ return new Intl.NumberFormat('ar-IQ').format(Math.round(n)); }
+function isThisMonth(dateStr){
+  const d = new Date(dateStr);
+  const n = new Date();
+  return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth();
+}
+
+/* ===================== Derived data ===================== */
+function promoterById(id){ return DB.promoters.find(p=>p.id===id); }
+function ordersFor(promoterId){ return DB.orders.filter(o=>o.promoterId===promoterId); }
+function monthlyUnits(promoterId){
+  return ordersFor(promoterId).filter(o=>isThisMonth(o.date)).reduce((s,o)=>s+Number(o.quantity),0);
+}
+function monthlyRevenue(promoterId){
+  return ordersFor(promoterId).filter(o=>isThisMonth(o.date)).reduce((s,o)=>s+Number(o.quantity)*Number(o.unitPrice),0);
+}
+function inventoryFor(promoterId){ return DB.inventory.filter(i=>i.promoterId===promoterId); }
+function totalStock(promoterId){ return inventoryFor(promoterId).reduce((s,i)=>s+Number(i.quantity),0); }
+
+function gaugeColorVal(pct){
+  if(pct>=100) return 'linear-gradient(90deg, #00976E, var(--accent))';
+  if(pct>=50) return 'linear-gradient(90deg, var(--violet), var(--accent))';
+  return 'linear-gradient(90deg, #C23847, var(--danger))';
+}
+
+/* ===================== Render: Header / Role switch ===================== */
+function renderRoleSwitch(){
+  const el = document.getElementById('roleSwitch');
+  const options = DB.promoters.map(p=>`<option value="${p.id}" ${ROLE.type==='promoter'&&ROLE.promoterId===p.id?'selected':''}>${p.name}</option>`).join('');
+  el.innerHTML = `
+    <select id="roleType">
+      <option value="manager" ${ROLE.type==='manager'?'selected':''}>👤 مدير المبيعات</option>
+      <option value="promoter" ${ROLE.type==='promoter'?'selected':''}>🚚 بروموتر</option>
+    </select>
+    ${ROLE.type==='promoter' ? `<select id="promoterPicker">${options || '<option value="">لا يوجد بروموترز</option>'}</select>` : ''}
+  `;
+  document.getElementById('roleType').onchange = async (e)=>{
+    ROLE.type = e.target.value;
+    if(ROLE.type==='promoter' && !ROLE.promoterId && DB.promoters[0]) ROLE.promoterId = DB.promoters[0].id;
+    activeTab = ROLE.type==='manager' ? 'overview' : 'my';
+    await saveRole(); renderAll();
+  };
+  const picker = document.getElementById('promoterPicker');
+  if(picker){
+    picker.onchange = async (e)=>{ ROLE.promoterId = e.target.value; await saveRole(); renderAll(); };
+  }
+}
+
+/* ===================== Render: Tabs ===================== */
+function renderTabs(){
+  const el = document.getElementById('tabs');
+  let tabsList;
+  if(ROLE.type==='manager'){
+    tabsList = [
+      ['overview','نظرة عامة','overview'],
+      ['promoters','البروموترز','promoters'],
+      ['orders','الطلبات','orders'],
+      ['inventory','المخزون','inventory'],
+    ];
+  } else {
+    tabsList = [
+      ['my','لوحتي','home'],
+      ['myorders','طلباتي','orders'],
+      ['myinventory','مخزوني','inventory'],
+    ];
+  }
+  if(!tabsList.find(t=>t[0]===activeTab)) activeTab = tabsList[0][0];
+  el.innerHTML = tabsList.map(([key,label,icon])=>
+    `<button class="tab ${activeTab===key?'active':''}" data-tab="${key}">${ICONS[icon]}${label}</button>`
+  ).join('');
+  el.querySelectorAll('.tab').forEach(btn=>{
+    btn.onclick = ()=>{ activeTab = btn.dataset.tab; renderAll(); };
+  });
+}
+
+/* ===================== Render: Main ===================== */
+function renderAll(){
+  renderRoleSwitch();
+  renderTabs();
+  const main = document.getElementById('main');
+  if(ROLE.type==='manager'){
+    if(activeTab==='overview') main.innerHTML = viewManagerOverview();
+    else if(activeTab==='promoters') main.innerHTML = viewPromoters();
+    else if(activeTab==='orders') main.innerHTML = viewOrders(null);
+    else if(activeTab==='inventory') main.innerHTML = viewInventory(null);
+  } else {
+    if(!ROLE.promoterId && DB.promoters[0]) ROLE.promoterId = DB.promoters[0].id;
+    if(activeTab==='my') main.innerHTML = viewMy();
+    else if(activeTab==='myorders') main.innerHTML = viewOrders(ROLE.promoterId);
+    else if(activeTab==='myinventory') main.innerHTML = viewInventory(ROLE.promoterId);
+  }
+  attachHandlers();
+}
+
+/* ---------- Manager: Overview ---------- */
+function viewManagerOverview(){
+  if(DB.promoters.length===0){
+    return emptyState('لا يوجد بروموترز بعد', 'ابدأ بإضافة أول بروموتر من تبويب "البروموترز"');
+  }
+  const totalRevenue = DB.promoters.reduce((s,p)=>s+monthlyRevenue(p.id),0);
+  const totalOrdersThisMonth = DB.orders.filter(o=>isThisMonth(o.date)).length;
+  const totalUnits = DB.promoters.reduce((s,p)=>s+monthlyUnits(p.id),0);
+  let top = null;
+  DB.promoters.forEach(p=>{ const u=monthlyUnits(p.id); if(!top || u>top.units) top = {name:p.name, units:u}; });
+
+  const cards = DB.promoters.map(p=>{
+    const units = monthlyUnits(p.id);
+    const target = Number(p.monthlyTarget)||0;
+    const pct = target>0 ? Math.min(100,(units/target)*100) : 0;
+    const stock = totalStock(p.id);
+    return `
+    <div class="manifest">
+      <div class="top">
+        <div>
+          <div class="name">${esc(p.name)}</div>
+          <span class="region">${esc(p.region||'بدون منطقة')}</span>
+        </div>
+        <div class="target-tag">
+          <div class="t-label">الهدف الشهري</div>
+          <div class="t-val">${fmtNum(target)}</div>
+        </div>
+      </div>
+      <div class="stub"></div>
+      <div class="gauge-wrap">
+        <div class="gauge-track"><div class="gauge-fill" style="width:${pct}%;background:${gaugeColorVal(target>0?(units/target)*100:0)}"></div></div>
+        <div class="gauge-labels"><span>${fmtNum(units)} جهاز مباع</span><span>${target>0?Math.round((units/target)*100):0}%</span></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat">إيراد الشهر<b>${fmtNum(monthlyRevenue(p.id))} د.ع</b></div>
+        <div class="stat">مخزون متبقي<b>${fmtNum(stock)}</b></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="icon-badge">${ICONS.revenue}</div><div class="label">إجمالي الإيراد (هذا الشهر)</div><div class="value">${fmtNum(totalRevenue)}</div><div class="sub">دينار عراقي</div></div>
+      <div class="kpi"><div class="icon-badge">${ICONS.orders}</div><div class="label">طلبات هذا الشهر</div><div class="value">${fmtNum(totalOrdersThisMonth)}</div><div class="sub">عملية بيع/توزيع</div></div>
+      <div class="kpi"><div class="icon-badge">${ICONS.units}</div><div class="label">أجهزة موزّعة</div><div class="value">${fmtNum(totalUnits)}</div><div class="sub">خلال الشهر الحالي</div></div>
+      <div class="kpi"><div class="icon-badge">${ICONS.trophy}</div><div class="label">أفضل بروموتر</div><div class="value" style="font-size:18px">${top? esc(top.name):'—'}</div><div class="sub">${top?fmtNum(top.units)+' جهاز':''}</div></div>
+    </div>
+    <div class="section-head">
+      <div><div class="eyebrow">حسب البروموتر</div><h2>تقدّم الأهداف الشهرية</h2></div>
+    </div>
+    <div class="manifest-grid">${cards}</div>
+  `;
+}
+
+/* ---------- Manager: Promoters CRUD ---------- */
+function viewPromoters(){
+  const rows = DB.promoters.map(p=>`
+    <tr>
+      <td>${esc(p.name)}</td>
+      <td>${esc(p.phone||'—')}</td>
+      <td>${esc(p.region||'—')}</td>
+      <td class="num">${fmtNum(p.monthlyTarget||0)}</td>
+      <td class="num">${fmtNum(monthlyUnits(p.id))}</td>
+      <td><button class="ghost small" data-del-promoter="${p.id}">حذف</button></td>
+    </tr>`).join('');
+
+  return `
+    <div class="section-head">
+      <div><div class="eyebrow">إدارة الفريق</div><h2>البروموترز</h2></div>
+    </div>
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-title">${ICONS.promoters}إضافة بروموتر جديد</div>
+      <div class="form-grid">
+        <div class="field"><label>الاسم</label><input id="pName" placeholder="مثال: أحمد كريم"></div>
+        <div class="field"><label>رقم الهاتف</label><input id="pPhone" placeholder="07xxxxxxxxx"></div>
+        <div class="field"><label>المنطقة</label><input id="pRegion" placeholder="مثال: أربيل - عينكاوة"></div>
+        <div class="field"><label>الهدف الشهري (عدد الأجهزة)</label><input id="pTarget" type="number" min="0" placeholder="50"></div>
+      </div>
+      <div class="form-actions"><button id="addPromoterBtn">إضافة بروموتر</button></div>
+    </div>
+    ${DB.promoters.length===0 ? emptyState('لا يوجد بروموترز','أضف بروموتر جديد من الأعلى') : `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>الاسم</th><th>الهاتف</th><th>المنطقة</th><th class="num">الهدف الشهري</th><th class="num">المباع هذا الشهر</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`}
+  `;
+}
+
+/* ---------- Orders (shared view for manager=all, promoter=own) ---------- */
+function viewOrders(fixedPromoterId){
+  const list = (fixedPromoterId ? ordersFor(fixedPromoterId) : DB.orders)
+    .slice().sort((a,b)=> new Date(b.date)-new Date(a.date));
+
+  const promoterOptions = DB.promoters.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+
+  const rows = list.map(o=>{
+    const p = promoterById(o.promoterId);
+    return `<tr>
+      <td>${o.date}</td>
+      ${fixedPromoterId? '' : `<td>${p?esc(p.name):'—'}</td>`}
+      <td>${esc(o.deviceName)}</td>
+      <td class="num">${fmtNum(o.quantity)}</td>
+      <td class="num">${fmtNum(o.unitPrice)}</td>
+      <td class="num">${fmtNum(o.quantity*o.unitPrice)}</td>
+      <td>${esc(o.customerName||'—')}</td>
+      <td>${esc(o.region||'—')}</td>
+      <td><button class="ghost small" data-del-order="${o.id}">حذف</button></td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-head">
+      <div><div class="eyebrow">${fixedPromoterId?'سجلّي':'كل البروموترز'}</div><h2>الطلبات (المبيعات والتوزيع)</h2></div>
+      <button class="ghost small" id="exportExcelBtn">${ICONS.excel}تصدير Excel</button>
+    </div>
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-title">${ICONS.orders}تسجيل طلب جديد</div>
+      <div class="scan-row">
+        <div class="scan-text"><b>تعبئة تلقائية من وصل قبض</b>التقط أو ارفع صورة الوصل وسيتم تعبئة الحقول تلقائياً — تحقق منها قبل الحفظ.</div>
+        <label class="scan-btn" id="scanBtnLabel">${ICONS.camera}<span id="scanBtnText">مسح وصل قبض</span>
+          <input type="file" id="receiptFile" accept="image/*" capture="environment">
+        </label>
+      </div>
+      <div class="form-grid">
+        ${fixedPromoterId? `<input type="hidden" id="oPromoter" value="${fixedPromoterId}">` : `
+        <div class="field"><label>البروموتر</label><select id="oPromoter">${promoterOptions || '<option value="">أضف بروموتر أولاً</option>'}</select></div>`}
+        <div class="field"><label>التاريخ</label><input id="oDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>اسم الجهاز</label><input id="oDevice" placeholder="مثال: سماعة X200"></div>
+        <div class="field"><label>الكمية</label><input id="oQty" type="number" min="1" value="1"></div>
+        <div class="field"><label>سعر الوحدة (د.ع)</label><input id="oPrice" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>اسم الزبون</label><input id="oCustomer" placeholder="اختياري"></div>
+        <div class="field"><label>المنطقة</label><input id="oRegion" placeholder="اختياري"></div>
+      </div>
+      <div class="form-actions"><button id="addOrderBtn">تسجيل طلب</button></div>
+    </div>
+    ${list.length===0 ? emptyState('لا توجد طلبات بعد','سجّل أول عملية بيع أو توزيع من الأعلى') : `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>التاريخ</th>${fixedPromoterId?'':'<th>البروموتر</th>'}<th>الجهاز</th><th class="num">الكمية</th><th class="num">السعر</th><th class="num">الإجمالي</th><th>الزبون</th><th>المنطقة</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`}
+  `;
+}
+
+/* ---------- Inventory ---------- */
+function viewInventory(fixedPromoterId){
+  const list = (fixedPromoterId ? inventoryFor(fixedPromoterId) : DB.inventory);
+  const promoterOptions = DB.promoters.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+
+  const rows = list.map(i=>{
+    const p = promoterById(i.promoterId);
+    const low = Number(i.quantity) <= 3;
+    return `<tr>
+      ${fixedPromoterId? '' : `<td>${p?esc(p.name):'—'}</td>`}
+      <td>${esc(i.deviceName)}</td>
+      <td class="num">${fmtNum(i.quantity)} ${low?`<span class="pill warn">منخفض</span>`:`<span class="pill ok">جيد</span>`}</td>
+      <td><button class="ghost small" data-del-inv="${i.id}">حذف</button></td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-head">
+      <div><div class="eyebrow">${fixedPromoterId?'سجلّي':'كل البروموترز'}</div><h2>المخزون</h2></div>
+    </div>
+    ${fixedPromoterId? '' : `
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-title">${ICONS.inventory}تسليم مخزون</div>
+      <div class="form-grid">
+        <div class="field"><label>البروموتر</label><select id="iPromoter">${promoterOptions || '<option value="">أضف بروموتر أولاً</option>'}</select></div>
+        <div class="field"><label>اسم الجهاز</label><input id="iDevice" placeholder="مثال: سماعة X200"></div>
+        <div class="field"><label>الكمية المسلَّمة</label><input id="iQty" type="number" min="1" value="1"></div>
+      </div>
+      <div class="form-actions"><button id="addInvBtn">تسليم مخزون</button></div>
+    </div>`}
+    ${list.length===0 ? emptyState('لا يوجد مخزون مسجّل', fixedPromoterId? 'لم يتم تسليمك أي أجهزة بعد' : 'سلّم مخزوناً لأحد البروموترز من الأعلى') : `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>${fixedPromoterId?'':'<th>البروموتر</th>'}<th>الجهاز</th><th class="num">الكمية المتبقية</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`}
+  `;
+}
+
+/* ---------- Promoter: My dashboard ---------- */
+function viewMy(){
+  const p = promoterById(ROLE.promoterId);
+  if(!p) return emptyState('لا يوجد بروموتر محدد', 'اطلب من المدير إضافتك كبروموتر أولاً');
+  const units = monthlyUnits(p.id);
+  const target = Number(p.monthlyTarget)||0;
+  const pct = target>0 ? Math.min(100,(units/target)*100) : 0;
+  const revenue = monthlyRevenue(p.id);
+  const stock = totalStock(p.id);
+
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="icon-badge">${ICONS.home}</div><div class="label">مرحباً</div><div class="value" style="font-size:18px">${esc(p.name)}</div><div class="sub">${esc(p.region||'')}</div></div>
+      <div class="kpi"><div class="icon-badge">${ICONS.units}</div><div class="label">مبيعات الشهر</div><div class="value">${fmtNum(units)}</div><div class="sub">جهاز من أصل ${fmtNum(target)}</div></div>
+      <div class="kpi"><div class="icon-badge">${ICONS.revenue}</div><div class="label">إيراد الشهر</div><div class="value">${fmtNum(revenue)}</div><div class="sub">دينار عراقي</div></div>
+      <div class="kpi"><div class="icon-badge">${ICONS.inventory}</div><div class="label">مخزون متبقي</div><div class="value">${fmtNum(stock)}</div><div class="sub">جهاز بحوزتك</div></div>
+    </div>
+    <div class="section-head"><div><div class="eyebrow">هدفك الشهري</div><h2>نسبة الإنجاز</h2></div></div>
+    <div class="manifest" style="max-width:440px;">
+      <div class="top">
+        <div><div class="name">${esc(p.name)}</div><span class="region">${esc(p.region||'بدون منطقة')}</span></div>
+        <div class="target-tag"><div class="t-label">الهدف</div><div class="t-val">${fmtNum(target)}</div></div>
+      </div>
+      <div class="stub"></div>
+      <div class="gauge-wrap">
+        <div class="gauge-track"><div class="gauge-fill" style="width:${pct}%;background:${gaugeColorVal(target>0?(units/target)*100:0)}"></div></div>
+        <div class="gauge-labels"><span>${fmtNum(units)} جهاز</span><span>${target>0?Math.round((units/target)*100):0}%</span></div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Shared UI bits ---------- */
+function emptyState(title, sub){
+  return `<div class="empty">${ICONS.empty}<div class="disp">${esc(title)}</div><div>${esc(sub)}</div></div>`;
+}
+function esc(s){
+  return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ===================== Receipt scanning (AI extraction) ===================== */
+function fileToBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(reader.result.split(',')[1]);
+    reader.onerror = ()=> reject(new Error('تعذّرت قراءة الملف'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function extractReceiptFields(file){
+  const base64 = await fileToBase64(file);
+  const mediaType = file.type || 'image/jpeg';
+
+  const response = await fetch('/api/extract-receipt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: base64, mediaType })
+  });
+
+  const data = await response.json().catch(()=>null);
+  if(!response.ok){
+    throw new Error((data && data.error) || 'فشل الاتصال بخدمة التحليل');
+  }
+  return data;
+}
+
+function fillOrderFormFromReceipt(fields){
+  const setVal = (id, val)=>{ const el = document.getElementById(id); if(el && val!==undefined && val!==null && val!=='') el.value = val; };
+  setVal('oDate', fields.date);
+  setVal('oDevice', fields.deviceName);
+  if(fields.quantity) setVal('oQty', Number(fields.quantity)||1);
+  if(fields.unitPrice) setVal('oPrice', Number(fields.unitPrice)||0);
+  setVal('oCustomer', fields.customerName);
+  setVal('oRegion', fields.region);
+}
+
+/* ===================== Excel export ===================== */
+function exportOrdersToExcel(fixedPromoterId){
+  if(typeof XLSX==='undefined'){ showToast('تعذّر تحميل مكتبة Excel، تحقق من الاتصال'); return; }
+  const list = (fixedPromoterId ? ordersFor(fixedPromoterId) : DB.orders)
+    .slice().sort((a,b)=> new Date(a.date)-new Date(b.date));
+  if(list.length===0){ showToast('لا توجد طلبات لتصديرها'); return; }
+
+  const rows = list.map(o=>{
+    const p = promoterById(o.promoterId);
+    return {
+      'التاريخ': o.date,
+      'البروموتر': p ? p.name : '',
+      'الجهاز': o.deviceName,
+      'الكمية': Number(o.quantity)||0,
+      'سعر الوحدة': Number(o.unitPrice)||0,
+      'الإجمالي': (Number(o.quantity)||0) * (Number(o.unitPrice)||0),
+      'الزبون': o.customerName || '',
+      'المنطقة': o.region || '',
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:12},{wch:18},{wch:20},{wch:9},{wch:12},{wch:12},{wch:18},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الطلبات');
+  const fname = 'طلبات-' + (fixedPromoterId ? (promoterById(fixedPromoterId)?.name||'بروموتر') : 'الكل') + '-' + new Date().toISOString().slice(0,10) + '.xlsx';
+  XLSX.writeFile(wb, fname);
+}
+
+/* ===================== Event handlers ===================== */
+function attachHandlers(){
+  const addPromoterBtn = document.getElementById('addPromoterBtn');
+  if(addPromoterBtn) addPromoterBtn.onclick = async ()=>{
+    const name = document.getElementById('pName').value.trim();
+    if(!name){ showToast('الرجاء إدخال اسم البروموتر'); return; }
+    DB.promoters.push({
+      id: uid(), name,
+      phone: document.getElementById('pPhone').value.trim(),
+      region: document.getElementById('pRegion').value.trim(),
+      monthlyTarget: Number(document.getElementById('pTarget').value)||0,
+    });
+    await saveDB(); showToast('تمت إضافة البروموتر'); renderAll();
+  };
+
+  document.querySelectorAll('[data-del-promoter]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.dataset.delPromoter;
+      if(!confirm('حذف هذا البروموتر وكل بياناته المرتبطة؟')) return;
+      DB.promoters = DB.promoters.filter(p=>p.id!==id);
+      DB.orders = DB.orders.filter(o=>o.promoterId!==id);
+      DB.inventory = DB.inventory.filter(i=>i.promoterId!==id);
+      await saveDB(); showToast('تم الحذف'); renderAll();
+    };
+  });
+
+  const addOrderBtn = document.getElementById('addOrderBtn');
+  if(addOrderBtn) addOrderBtn.onclick = async ()=>{
+    const promoterId = document.getElementById('oPromoter').value;
+    const device = document.getElementById('oDevice').value.trim();
+    const qty = Number(document.getElementById('oQty').value);
+    if(!promoterId || !device || !qty){ showToast('أكمل الحقول المطلوبة: البروموتر، الجهاز، الكمية'); return; }
+    const order = {
+      id: uid(), promoterId,
+      date: document.getElementById('oDate').value || new Date().toISOString().slice(0,10),
+      deviceName: device,
+      quantity: qty,
+      unitPrice: Number(document.getElementById('oPrice').value)||0,
+      customerName: document.getElementById('oCustomer').value.trim(),
+      region: document.getElementById('oRegion').value.trim(),
+    };
+    DB.orders.push(order);
+    const inv = DB.inventory.find(i=>i.promoterId===promoterId && i.deviceName===device);
+    if(inv){ inv.quantity = Math.max(0, Number(inv.quantity)-qty); }
+    await saveDB(); showToast('تم تسجيل الطلب'); renderAll();
+  };
+
+  document.querySelectorAll('[data-del-order]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      DB.orders = DB.orders.filter(o=>o.id!==btn.dataset.delOrder);
+      await saveDB(); showToast('تم حذف الطلب'); renderAll();
+    };
+  });
+
+  const receiptFile = document.getElementById('receiptFile');
+  if(receiptFile) receiptFile.onchange = async ()=>{
+    const file = receiptFile.files && receiptFile.files[0];
+    if(!file) return;
+    const label = document.getElementById('scanBtnLabel');
+    const text = document.getElementById('scanBtnText');
+    label.classList.add('busy');
+    text.textContent = 'جارِ تحليل الوصل...';
+    try{
+      const fields = await extractReceiptFields(file);
+      fillOrderFormFromReceipt(fields);
+      showToast('تم استخراج البيانات، تحقق منها ثم اضغط تسجيل طلب');
+    }catch(e){
+      showToast(e.message || 'تعذّر تحليل الوصل، جرّب صورة أوضح');
+    }finally{
+      label.classList.remove('busy');
+      text.textContent = 'مسح وصل قبض';
+      receiptFile.value = '';
+    }
+  };
+
+  const exportExcelBtn = document.getElementById('exportExcelBtn');
+  if(exportExcelBtn) exportExcelBtn.onclick = ()=>{
+    const scopedPromoterId = (ROLE.type==='promoter' && activeTab==='myorders') ? ROLE.promoterId : null;
+    exportOrdersToExcel(scopedPromoterId);
+  };
+
+  const addInvBtn = document.getElementById('addInvBtn');
+  if(addInvBtn) addInvBtn.onclick = async ()=>{
+    const promoterId = document.getElementById('iPromoter').value;
+    const device = document.getElementById('iDevice').value.trim();
+    const qty = Number(document.getElementById('iQty').value);
+    if(!promoterId || !device || !qty){ showToast('أكمل الحقول المطلوبة'); return; }
+    const existing = DB.inventory.find(i=>i.promoterId===promoterId && i.deviceName===device);
+    if(existing){ existing.quantity = Number(existing.quantity)+qty; }
+    else DB.inventory.push({ id: uid(), promoterId, deviceName: device, quantity: qty });
+    await saveDB(); showToast('تم تسليم المخزون'); renderAll();
+  };
+
+  document.querySelectorAll('[data-del-inv]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      DB.inventory = DB.inventory.filter(i=>i.id!==btn.dataset.delInv);
+      await saveDB(); showToast('تم الحذف'); renderAll();
+    };
+  });
+}
+
+/* ===================== Init ===================== */
+(async function init(){
+  document.getElementById('main').innerHTML = '<div class="empty">جارِ التحميل...</div>';
+  await loadDB();
+  await loadRole();
+  if(ROLE.type==='promoter' && !ROLE.promoterId && DB.promoters[0]) ROLE.promoterId = DB.promoters[0].id;
+  renderAll();
+})();
+</script>
+</body>
+</html>
